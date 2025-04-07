@@ -1,0 +1,109 @@
+#Trabalho de eletromagnetismo
+
+# Importa a biblioteca numpy com o apelido 'np', usada para cálculos numéricos
+import numpy as np
+
+# Importa a biblioteca matplotlib.pyplot com o apelido 'plt', usada para plotar gráficos
+import matplotlib.pyplot as plt
+
+# Importa o módulo necessário para criar gráficos em 3D
+from mpl_toolkits.mplot3d import Axes3D
+
+# Importa funções da biblioteca sympy para trabalhar com álgebra simbólica
+from sympy import symbols, Matrix, diff, simplify, lambdify, init_printing
+
+# Define uma função para calcular o rotacional de um campo elétrico simbolicamente
+def calcular_rotacional():
+    
+    # Habilita a formatação bonita (LaTeX) das expressões simbólicas no terminal
+    init_printing(use_unicode=True)
+    
+    print("CALCULADORA DE CAMPO ELÉTRICO DE CAMPO IRROTACIONAL\n")
+
+    # Cria as variáveis simbólicas x, y e z
+    x, y, z = symbols('x y z')
+
+    # Solicita ao usuário que digite as componentes do campo elétrico em função de x, y e z
+    Ex = input("Digite a componente Ex (em termos de x, y, z): ")
+    Ey = input("Digite a componente Ey (em termos de x, y, z): ")
+    Ez = input("Digite a componente Ez (em termos de x, y, z): ")
+
+    # Tenta converter as strings digitadas pelo usuário em expressões simbólicas
+    try:
+        Ex = eval(Ex, {'x': x, 'y': y, 'z': z})
+        Ey = eval(Ey, {'x': x, 'y': y, 'z': z})
+        Ez = eval(Ez, {'x': x, 'y': y, 'z': z})
+    except:
+        # Se houver erro na conversão (ex: sintaxe errada), exibe uma mensagem de erro
+        print("Erro na expressão fornecida! Use a sintaxe matemática correta.")
+        return  # Encerra a função
+
+    # Agrupa as componentes do campo elétrico em um vetor (matriz coluna)
+    E = Matrix([Ex, Ey, Ez])
+
+    # Calcula o rotacional ∇ × E usando a fórmula simbólica
+    rotacional = Matrix([
+        diff(E[2], y) - diff(E[1], z),
+        diff(E[0], z) - diff(E[2], x),
+        diff(E[1], x) - diff(E[0], y)
+    ])
+
+    # Simplifica as expressões do rotacional
+    rotacional_simplificado = simplify(rotacional)
+
+    # Verifica se o 'valor' das funções que foram inseridas rotacional é nulo
+    conservativo = rotacional_simplificado == Matrix([0, 0, 0])
+
+    # Exibe os resultados
+    print("\nRESULTADOS:")
+    print("Campo Elétrico E =", E)
+    print("Rotacional ∇ × E =", rotacional_simplificado)
+
+    # Condicional para verificar se o campo é conservativo
+    if conservativo:
+        print("CONCLUSÃO: Este campo é conservativo (Seu rotacional = 0)")
+    else:
+        print("CONCLUSÃO: Este campo não é irrotacional (Seu rotacional ≠ 0)")
+
+    # Chama a função para plotar o rotacional
+    plot_rotacional(rotacional_simplificado, x, y, z)
+
+# Função responsável por gerar o gráfico 3D do rotacional
+def plot_rotacional(rotacional, x, y, z):
+
+    # Converte as expressões simbólicas em funções numéricas usando lambdify
+    rot_x = lambdify((x, y, z), rotacional[0])
+    rot_y = lambdify((x, y, z), rotacional[1])
+    rot_z = lambdify((x, y, z), rotacional[2])
+
+    # Cria uma grade de pontos no espaço 3D para avaliação do campo vetorial
+    X, Y, Z = np.meshgrid(np.arange(-0.8, 1, 0.2),
+                          np.arange(-0.8, 1, 0.2),
+                          np.arange(-0.8, 1, 0.8))
+
+    # Avalia o campo vetorial do rotacional em cada ponto da grade
+    U = rot_x(X, Y, Z)
+    V = rot_y(X, Y, Z)
+    W = rot_z(X, Y, Z)
+
+    # Cria uma figura 3D para plotagem
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plota o campo vetorial com setas (vetores) azuis
+    ax.quiver(X, Y, Z, U, V, W, length=0.1, normalize=True, color='b')
+
+    # Define os rótulos dos eixos
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+
+    # Define o título do gráfico
+    ax.set_title('Campo Vetorial do Rotacional ∇ × E')
+
+    # Mostra o gráfico
+    plt.show()
+
+# Este bloco garante que a função principal seja executada apenas se o script for executado diretamente
+if __name__ == "__main__":
+    calcular_rotacional()
