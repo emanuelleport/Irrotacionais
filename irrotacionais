@@ -1,4 +1,5 @@
 #Trabalho de eletromagnetismo
+#Ana Laura, Bianca, Emanuelle, Fabieli e Pamela
 
 # Importa a biblioteca numpy com o apelido 'np', usada para cálculos numéricos
 import numpy as np
